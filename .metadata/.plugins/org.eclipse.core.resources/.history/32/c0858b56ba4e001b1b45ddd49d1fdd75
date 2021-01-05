@@ -1,0 +1,128 @@
+package frsd;
+import java.sql.*;
+
+import javax.sql.RowSet;
+import javax.sql.rowset.*;
+
+public class DatabaseHandler {
+   private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
+   private static final String DB_URL = "jdbc:mysql://localhost";
+   private static final String USER = "root";
+   private static final String PASS = "ben$on22";
+
+   private static Connection getConnection(String path) {
+	   Connection conn = null;
+	   try {
+		   System.out.println("Connecting to a selected database...");
+		   Class.forName(JDBC_DRIVER);
+		   if (path != null) {
+			   conn = DriverManager.getConnection(DB_URL+"/"+path, USER, PASS);   
+		   } else {
+			   conn = DriverManager.getConnection(DB_URL, USER, PASS);
+		   }
+		    
+	   } catch (Exception e) {
+		   e.printStackTrace();
+	   }
+	   System.out.println("Connected sucessfully");
+	   return conn;
+   }
+   
+   private static void createDatabase() {
+	   Connection conn = null;
+	   Statement stmt = null;
+	   try {
+		   conn = getConnection(null);
+		   System.out.println("Creating JDBC_CRITERIA_API Database...");
+		   stmt = conn.createStatement();
+		   String sql = "CREATE DATABASE IF NOT EXISTS JDBC_CRITERIA_API";
+		   stmt.executeUpdate(sql);
+		   System.out.println("Database created Succesfully...");
+		   
+	   } catch (Exception e) {
+		   e.printStackTrace();
+	   }
+   }
+   
+   public static void createTable() {
+	   Connection conn = null;
+	   Statement stmt = null;
+	   try {
+		   conn = getConnection("JDBC_CRITERIA_API");
+		   System.out.println("Creating SHOP Table...");
+		   stmt = conn.createStatement();
+		   String sql = "CREATE TABLE IF NOT EXISTS SHOP " +
+			            "(id INTEGER not NULL, " +
+			            " name VARCHAR(255) not NULL, " + 
+			            " profit DOUBLE not NULL, " + 
+			            " city VARCHAR(255) not NULL, " + 
+			            " PRIMARY KEY ( id ))"; 
+		   stmt.executeUpdate(sql);
+		   System.out.println("Table created Succesfully...");
+		   
+	   } catch (Exception e) {
+		   e.printStackTrace();
+	   }
+   }
+   
+   public static void insert(int id, String name, double profit, String city) {
+	   Connection conn = null;
+	   PreparedStatement stmt = null;
+	   try {
+		   conn = getConnection("JDBC_CRITERIA_API");
+		   System.out.println("Starting to execute the query...");
+		   String sql = "INSERT INTO SHOP(id, name, profit, city) "
+		   				+ "VALUES(?, ?, ?, ?)";
+		   stmt = conn.prepareStatement(sql);
+		   stmt.setInt(1, id);
+		   stmt.setString(2, name);
+		   stmt.setDouble(3, profit);
+		   stmt.setString(4, city);
+		   
+		   stmt.executeUpdate();
+		   
+		   
+	   } catch (Exception e) {
+		   e.printStackTrace();
+	   }
+   }
+   
+   public static void selectWithFilter() {
+	   Connection conn = null;
+	   try {
+		 conn = getConnection("JDBC_CRITERIA_API");
+		 CityFilter cityFilter = new CityFilter(10, 19, 1);  
+		 RowSetFactory factory = RowSetProvider.newFactory();
+		 FilteredRowSet frs = factory.createFilteredRowSet();
+		 frs.setCommand("SELECT id, name, city FROM SHOP");
+		 
+		 System.out.println("[Befor applying filter...]");
+		 frs.execute(conn);
+		 show(frs);
+		 
+		 System.out.println("[After applying filter...]");
+		 frs.beforeFirst();
+		 frs.setFilter(cityFilter);
+		 show(frs);
+		 
+	} catch (SQLException e) {
+		e.printStackTrace();
+	}
+   }
+ 
+   private static void show(ResultSet rs) {
+	   try {
+		   while(rs.next()) {
+			   int id = rs.getInt("id");
+			   String name = rs.getString("name");
+			   String city = rs.getString("city");
+
+			   System.out.println(id + "->" + name + "->" + city);
+		   }
+	   } catch (SQLException e) {
+		   e.printStackTrace();
+	   }
+	   System.out.println("-------------------------------------");
+   }
+   
+}

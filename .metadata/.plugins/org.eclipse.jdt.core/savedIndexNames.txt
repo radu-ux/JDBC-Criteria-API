@@ -1,0 +1,3 @@
+INDEX VERSION 1.131+C:\Users\uivar\Desktop\Scoala\Design Pattern\JDBC Criteria API\.metadata\.plugins\org.eclipse.jdt.core
+789344348.index
+3683394162.index
